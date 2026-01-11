@@ -57,13 +57,10 @@ fi
 
 >&2 echo "Postgres is up and running on port ${DB_PORT} - running migrations now!"
 
-DATABASE_URL=postgres:://${APP_USER}:${APP_USER_PWD}@127.0.0.1:${DB_PORT}/${APP_DB_NAME}
-PGHOST=127.0.0.1
-PGPORT=5432
-PGUSER=app
-PGPASSWORD=secret
-PGDATABASE=newsletter
-export PGHOST PGPORT PGUSER PGPASSWORD PGDATABASE DATABASE_URL
+# ONE SINGLE COLON SCREWED ME FOR TWO DAYS
+# (That said, I think I learned a lot about docker, bash, and postgres in the process)
+DATABASE_URL=postgres://${APP_USER}:${APP_USER_PWD}@localhost:${DB_PORT}/${APP_DB_NAME}
+export DATABASE_URL
 sqlx database create
 sqlx migrate run
 
