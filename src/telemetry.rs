@@ -1,17 +1,9 @@
 // use tracing::subscriber::set_global_default;
 // use tracing::Subscriber;
-use tracing::{
-    subscriber::set_global_default,
-    Subscriber,
-};
+use tracing::{Subscriber, subscriber::set_global_default};
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
 use tracing_log::LogTracer;
-use tracing_subscriber::{
-    layer::SubscriberExt,
-    EnvFilter,
-    Registry,
-    fmt::MakeWriter,
-};
+use tracing_subscriber::{EnvFilter, Registry, fmt::MakeWriter, layer::SubscriberExt};
 
 // compose multiple layers into a tracing subscriber
 // using impl Subscriber to avoid specifying the return type
@@ -20,18 +12,16 @@ pub fn get_subscriber<Sink>(
     name: String,
     env_filter: String,
     sink: Sink,
-) -> impl Subscriber + Send + Sync 
-    // this is a higher-ranked trait bound (HRTB)
-    // which means sink implements the 'MakeWriter' trait for all
-    // choices of the lifetime parameter `'a`
-    where Sink: for<'a> MakeWriter<'a> + Send + Sync + 'static,
+) -> impl Subscriber + Send + Sync
+// this is a higher-ranked trait bound (HRTB)
+// which means sink implements the 'MakeWriter' trait for all
+// choices of the lifetime parameter `'a`
+where
+    Sink: for<'a> MakeWriter<'a> + Send + Sync + 'static,
 {
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new(env_filter));
-    let formatting_layer = BunyanFormattingLayer::new(
-        name,
-        sink
-    );
+    let env_filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(env_filter));
+    let formatting_layer = BunyanFormattingLayer::new(name, sink);
 
     Registry::default()
         .with(env_filter)
