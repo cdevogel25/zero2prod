@@ -3,6 +3,7 @@
 FROM lukemathwalker/cargo-chef:latest-rust-slim-trixie AS chef
 WORKDIR /app
 
+# this is what you get for developing on two different machines
 ARG ARCH_TARGET=x86_64
 ENV TARGET=${ARCH_TARGET}
 
@@ -21,6 +22,7 @@ RUN cargo chef cook --release --recipe-path recipe.json
 # layers should be cached.
 COPY . .
 ENV SQLX_OFFLINE=true
+# she static on my link til' I hit the ENTRYPOINT
 # build project
 RUN cargo build --target=${TARGET}-unknown-linux-musl --release --bin zero2prod
 
