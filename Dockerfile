@@ -3,7 +3,10 @@
 FROM lukemathwalker/cargo-chef:latest-rust-slim-trixie AS chef
 WORKDIR /app
 
-RUN rustup target add x86_64-unknown-linux-musl
+ARG ARCH_TARGET=x86_64
+ENV TARGET=${ARCH_TARGET}
+
+RUN rustup target add ${TARGET}-unknown-linux-musl
 RUN apt update && apt install musl-tools musl-dev -y
 FROM chef AS planner
 COPY . .
@@ -19,13 +22,15 @@ RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 ENV SQLX_OFFLINE=true
 # build project
-RUN cargo build --target=x86_64-unknown-linux-musl --release --bin zero2prod
+RUN cargo build --target=${TARGET}-unknown-linux-musl --release --bin zero2prod
 
 FROM alpine:latest AS runtime
+ARG ARCH_TARGET=x86_64
+ENV TARGET=${ARCH_TARGET}
 WORKDIR /app
 RUN apk update \
     && apk add openssl ca-certificates
-COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/zero2prod ./
+COPY --from=builder /app/target/${TARGET}-unknown-linux-musl/release/zero2prod ./
 COPY configuration configuration
 ENV APP_ENVIRONMENT=production
 ENTRYPOINT ["./zero2prod"]
