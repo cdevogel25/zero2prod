@@ -6,7 +6,7 @@ use zero2prod::{
     configuration::{DatabaseSettings, get_configuration},
     email_client::EmailClient,
     startup::run,
-    telemetry::{get_subscriber, init_subscriber}
+    telemetry::{get_subscriber, init_subscriber},
 };
 
 static TRACING: LazyLock<()> = LazyLock::new(|| {
@@ -38,14 +38,18 @@ async fn spawn_app() -> TestApp {
     configuration.database.database_name = Uuid::new_v4().to_string();
     let connection_pool = configure_database(&configuration.database).await;
 
-    let sender_email = configuration.email_client.sender()
+    let sender_email = configuration
+        .email_client
+        .sender()
         .expect("Invalid sender email address.");
     let email_client = EmailClient::new(
         configuration.email_client.base_url,
         sender_email,
+        configuration.email_client.authorization_token,
     );
 
-    let server = run(listener, connection_pool.clone(), email_client).expect("Failed to bind address.");
+    let server =
+        run(listener, connection_pool.clone(), email_client).expect("Failed to bind address.");
 
     let _ = tokio::spawn(server);
     TestApp {
