@@ -1,4 +1,4 @@
-use actix_web::{HttpResponse, ResponseError, web, http::StatusCode};
+use actix_web::{HttpResponse, ResponseError, http::StatusCode, web};
 use anyhow::Context;
 use chrono::Utc;
 use rand::{Rng, distr::Alphanumeric, rng};
@@ -196,12 +196,10 @@ pub async fn store_token(
         subscription_token,
         subscriber_id
     );
-    transaction.execute(query)
-        .await
-        .map_err(|e| {
-            tracing::error!("Failed to execute query: {:?}", e);
-            StoreTokenError(e)
-        })?;
+    transaction.execute(query).await.map_err(|e| {
+        tracing::error!("Failed to execute query: {:?}", e);
+        StoreTokenError(e)
+    })?;
 
     Ok(())
 }
