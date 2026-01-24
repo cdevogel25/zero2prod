@@ -12,3 +12,4 @@ Page: 352/623
 - use a proper template solution for our emails (tera?)
 
 - how on earth do you do angular with this there must be a way
+    - the way is make this a backend *only* and send requests from the main page.

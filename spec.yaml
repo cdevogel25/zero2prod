@@ -43,6 +43,3 @@ databases:
     num_nodes: 1
     size: db-s-dev-database
     version: "17"
-domains:
-  - domain: devogel.dev
-    type: PRIMARY
