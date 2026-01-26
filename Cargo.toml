@@ -51,7 +51,6 @@ rand = { version = "0.9.2", features = ["std_rng"] }
 anyhow = "1.0.40"
 base64 = "0.22.1"
 argon2 = { version = "0.5", features = ["std"] }
-sha3 = "0.10.8"
 validator = "0.20.0"
 tracing-log = "0.2.0"
 tracing-actix-web = "0.7.21"
