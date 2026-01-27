@@ -126,7 +126,7 @@ async fn get_confirmed_subscribers(
     pool: &PgPool,
     // return a vector of results in the happy case
     // lets the caller bubble up network/transient failures with `?` while the compiler
-    // forces them to handle the sublter mapping error.
+    // forces them to handle the subtler mapping error.
 ) -> Result<Vec<Result<ConfirmedSubscriber, anyhow::Error>>, anyhow::Error> {
     // map into the domain type
     let confirmed_subscribers = sqlx::query!(
