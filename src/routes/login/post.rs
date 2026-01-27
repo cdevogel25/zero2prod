@@ -1,7 +1,7 @@
-use crate::authentication::{validate_credentials, Credentials, AuthError};
+use crate::authentication::{AuthError, Credentials, validate_credentials};
 use crate::routes::error_chain_fmt;
 use crate::startup::HmacSecret;
-use actix_web::{error::InternalError, HttpResponse, http::{header::LOCATION}, web};
+use actix_web::{HttpResponse, error::InternalError, http::header::LOCATION, web};
 use hmac::{Hmac, Mac};
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::PgPool;
@@ -39,11 +39,10 @@ pub async fn login(
         username: form.0.username,
         password: form.0.password,
     };
-    
+
     match validate_credentials(credentials, &pool).await {
         Ok(user_id) => {
-            tracing::Span::current()
-                .record("user_id", tracing::field::display(&user_id));
+            tracing::Span::current().record("user_id", tracing::field::display(&user_id));
             Ok(HttpResponse::SeeOther()
                 .insert_header((LOCATION, "/"))
                 .finish())
@@ -51,18 +50,13 @@ pub async fn login(
         Err(e) => {
             let e = match e {
                 AuthError::InvalidCredentials(_) => LoginError::AuthError(e.into()),
-                AuthError::UnexpectedError(_) => {
-                    LoginError::UnexpectedError(e.into())
-                },
+                AuthError::UnexpectedError(_) => LoginError::UnexpectedError(e.into()),
             };
-            let query_string = format!(
-                "error={}",
-                urlencoding::Encoded::new(e.to_string())
-            );
+            let query_string = format!("error={}", urlencoding::Encoded::new(e.to_string()));
             let hmac_tag = {
-                let mut mac = Hmac::<sha2::Sha256>::new_from_slice(
-                    secret.0.expose_secret().as_bytes()
-                ).unwrap();
+                let mut mac =
+                    Hmac::<sha2::Sha256>::new_from_slice(secret.0.expose_secret().as_bytes())
+                        .unwrap();
                 mac.update(query_string.as_bytes());
                 mac.finalize().into_bytes()
             };
