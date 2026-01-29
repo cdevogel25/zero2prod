@@ -23,10 +23,10 @@ impl Application {
         let connection_pool = get_connection_pool(&configuration.database);
 
         // i guess this just works?
-        sqlx::migrate!("./migrations")
-            .run(&connection_pool)
-            .await
-            .expect("Failed to apply migrations.");
+        // sqlx::migrate!("./migrations")
+        //     .run(&connection_pool)
+        //     .await
+        //     .expect("Failed to apply migrations.");
 
         let sender_email = configuration
             .email_client
@@ -54,7 +54,8 @@ impl Application {
             configuration.application.base_url,
             configuration.application.hmac_secret,
             configuration.redis_uri,
-        ).await?;
+        )
+        .await?;
 
         Ok(Self { port, server })
     }
@@ -90,10 +91,15 @@ async fn run(
     let server = HttpServer::new(move || {
         App::new()
             .wrap(message_framework.clone())
-            .wrap(SessionMiddleware::new(redis_store.clone(), secret_key.clone()))
+            .wrap(SessionMiddleware::new(
+                redis_store.clone(),
+                secret_key.clone(),
+            ))
             .wrap(TracingLogger::default())
             .route("/", web::get().to(home))
             .route("/admin/dashboard", web::get().to(admin_dashboard))
+            .route("/admin/password", web::get().to(change_password_form))
+            .route("/admin/password", web::post().to(change_password))
             .route("/login", web::get().to(login_form))
             .route("/login", web::post().to(login))
             .route("/newsletters", web::post().to(publish_newsletter))

@@ -1,5 +1,5 @@
-use actix_session::{Session, SessionGetError, SessionInsertError, SessionExt};
-use actix_web::{dev::Payload, FromRequest, HttpRequest};
+use actix_session::{Session, SessionExt, SessionGetError, SessionInsertError};
+use actix_web::{FromRequest, HttpRequest, dev::Payload};
 use std::future::{Ready, ready};
 
 use uuid::Uuid;
@@ -26,7 +26,7 @@ impl FromRequest for TypedSession {
     // here we are saying "we return the same error returned
     // by the implementation of `FromRequest` for `Session`".
     type Error = <Session as FromRequest>::Error;
-    
+
     // dangit! I thought I had one!!
     // but 1.75 does support `async` in traits so what gives?
     // is it an actix-session issue?
