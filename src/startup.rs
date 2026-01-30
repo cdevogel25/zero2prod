@@ -64,7 +64,6 @@ impl Application {
     pub fn port(&self) -> u16 {
         self.port
     }
-
     // a more expressive name that makes it clear that this function only returns
     // when the application is stopped
     pub async fn run_until_stopped(self) -> Result<(), std::io::Error> {
