@@ -214,7 +214,6 @@ pub async fn insert_subscriber(
 ) -> Result<Uuid, sqlx::Error> {
     // why can't sqlx::query see this??
     let subscriber_id = Uuid::new_v4();
-
     let query = sqlx::query!(
         r#"
     INSERT INTO subscriptions (id, email, name, subscribed_at, status)

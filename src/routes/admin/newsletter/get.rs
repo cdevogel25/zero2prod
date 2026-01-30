@@ -2,7 +2,7 @@ use actix_web::{HttpResponse, http::header::ContentType};
 use actix_web_flash_messages::IncomingFlashMessages;
 use std::fmt::Write;
 
-pub async fn send_newsletter_form(
+pub async fn publish_newsletter_form(
     flash_messages: IncomingFlashMessages,
 ) -> Result<HttpResponse, actix_web::Error> {
     let mut msg_html = String::new();
@@ -21,18 +21,25 @@ pub async fn send_newsletter_form(
             </head>
             <body>
                 {msg_html}
-                <form action="/admin/newsletter method="post">
+                <form action="/admin/newsletter" method="post">
                     <label>Title
                         <input
                             type="text"
-                            name="newsletter_title"
+                            name="title"
                         >
                     </label>
                     <br>
-                    <label>Body
+                    <label>Newsletter Text:
                         <input
                             type="text"
-                            name="newsletter_body"
+                            name="text_content"
+                        >
+                    </label>
+                    <br>
+                    <label>Newsletter HTML:
+                        <input
+                            type="text"
+                            name="html_content"
                         >
                     </label>
                     <br>

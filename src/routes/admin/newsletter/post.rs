@@ -24,13 +24,13 @@ pub struct ConfirmedSubscriber {
     fields(user_id=%*user_id)
 )]
 pub async fn publish_newsletter(
-    form: web::Data<FormData>,
+    form: web::Form<FormData>,
     pool: web::Data<PgPool>,
     email_client: web::Data<EmailClient>,
     user_id: web::ReqData<UserId>,
 ) -> Result<HttpResponse, actix_web::Error> {
-    let confirmed_subscribers = get_confirmed_subscribers(&pool).await.map_err(e500)?;
-    for subscriber in confirmed_subscribers {
+    let subscribers = get_confirmed_subscribers(&pool).await.map_err(e500)?;
+    for subscriber in subscribers {
         match subscriber {
             Ok(subscriber) => {
                 email_client
