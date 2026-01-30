@@ -74,7 +74,6 @@ async fn you_must_be_logged_in_to_publish_a_newsletter() {
     assert_is_redirect_to(&response, "/login");
 }
 
-
 #[tokio::test]
 async fn newsletters_are_not_delivered_to_unconfirmed_subscribers() {
     // arrange
@@ -100,9 +99,7 @@ async fn newsletters_are_not_delivered_to_unconfirmed_subscribers() {
 
     // act 2: follow the redirect
     let html_body = app.get_publish_newsletter_html().await;
-    assert!(html_body.contains(
-        "<p><i>The newsletter issue has been published!</i></p>"
-    ));
+    assert!(html_body.contains("<p><i>The newsletter issue has been published!</i></p>"));
 }
 
 #[tokio::test]
@@ -132,7 +129,5 @@ async fn newsletters_are_delivered_to_confirmed_subscribers() {
 
     // act 2: follow the redirect
     let html_page = app.get_publish_newsletter_html().await;
-    assert!(html_page.contains(
-        "<p><i>The newsletter issue has been published!</i></p>"
-    ));
+    assert!(html_page.contains("<p><i>The newsletter issue has been published!</i></p>"));
 }
