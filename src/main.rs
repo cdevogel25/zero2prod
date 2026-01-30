@@ -1,9 +1,9 @@
+use rustls::crypto::CryptoProvider;
 use zero2prod::{
     configuration::get_configuration,
     startup::Application,
     telemetry::{get_subscriber, init_subscriber},
 };
-use rustls::crypto::CryptoProvider;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
