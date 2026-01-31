@@ -1,3 +1,6 @@
+[![wakatime](https://wakatime.com/badge/user/9657b28a-a48a-4a67-baed-44a03722033d/project/975385a4-1144-4022-9602-0bbf7a0e7a3a.svg)](https://wakatime.com/badge/user/9657b28a-a48a-4a67-baed-44a03722033d/project/975385a4-1144-4022-9602-0bbf7a0e7a3a)
+
+
 Page: 497/623  
 (on the macbook) don't forget: docker build --build-arg ARCH_TARGET=aarch64 --tag ...
 
