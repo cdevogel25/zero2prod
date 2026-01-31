@@ -1,14 +1,24 @@
 use crate::helpers::{ConfirmationLinks, TestApp, assert_is_redirect_to, spawn_app};
-use wiremock::{
-    Mock, ResponseTemplate,
-    matchers::{any, method, path},
+use fake::{
+    Fake,
+    faker::{internet::en::SafeEmail, name::en::Name},
 };
 use std::time::Duration;
+use wiremock::{
+    Mock, MockBuilder, ResponseTemplate,
+    matchers::{any, method, path},
+};
 
 // helpers
 // use pub api of the app to create an unconfirmed sub
 async fn create_unconfirmed_subscriber(app: &TestApp) -> ConfirmationLinks {
-    let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
+    let name: String = Name().fake();
+    let email: String = SafeEmail().fake();
+    let body = serde_urlencoded::to_string(&serde_json::json!({
+        "name": name,
+        "email": email
+    }))
+    .unwrap();
 
     let _mock_guard = Mock::given(path("/email"))
         .and(method("POST"))
@@ -43,6 +53,11 @@ async fn create_confirmed_subscriber(app: &TestApp) {
         .unwrap()
         .error_for_status()
         .unwrap();
+}
+
+// short-hand for a common mock setup
+fn when_sending_an_email() -> MockBuilder {
+    Mock::given(path("/email")).and(method("POST"))
 }
 
 // tests
@@ -199,5 +214,54 @@ async fn concurrent_form_submission_is_handled_gracefully() {
     let (response1, response2) = tokio::join!(response1, response2);
 
     assert_eq!(response1.status(), response2.status());
-    assert_eq!(response1.text().await.unwrap(), response2.text().await.unwrap());
+    assert_eq!(
+        response1.text().await.unwrap(),
+        response2.text().await.unwrap()
+    );
+}
+
+#[tokio::test]
+async fn transient_errors_do_not_cause_duplicate_deliveries_on_retries() {
+    // arrange
+    let app = spawn_app().await;
+    let newsletter_request_body = serde_json::json!({
+        "title": "Newsletter title",
+        "text_content": "Newsletter body as plain text",
+        "html_content": "<p>Newsletter body as HTML</p>",
+        "idempotency_key": uuid::Uuid::new_v4().to_string()
+    });
+
+    // two subscribers instead of one!
+    create_confirmed_subscriber(&app).await;
+    create_confirmed_subscriber(&app).await;
+    app.test_user.login(&app).await;
+
+    // act 1: submit newsletter form
+    // email delivery fails for the second subscriber
+    when_sending_an_email()
+        .respond_with(ResponseTemplate::new(200))
+        .up_to_n_times(1)
+        .expect(1)
+        .mount(&app.email_server)
+        .await;
+    when_sending_an_email()
+        .respond_with(ResponseTemplate::new(500))
+        .up_to_n_times(1)
+        .expect(1)
+        .mount(&app.email_server)
+        .await;
+
+    let response = app.post_publish_newsletter(&newsletter_request_body).await;
+    assert_eq!(response.status().as_u16(), 500);
+
+    // act 2: retry submitting the form
+    // email delivery will succeed for both subscribers now
+    when_sending_an_email()
+        .respond_with(ResponseTemplate::new(200))
+        .expect(1)
+        .named("Delivery retry")
+        .mount(&app.email_server)
+        .await;
+    let response = app.post_publish_newsletter(&newsletter_request_body).await;
+    assert_eq!(response.status().as_u16(), 303);
 }
