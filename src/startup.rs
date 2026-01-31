@@ -30,7 +30,6 @@ impl Application {
         //     .await
         //     .expect("Failed to apply migrations.");
 
-
         let address = format!(
             "{}:{}",
             configuration.application.host, configuration.application.port,

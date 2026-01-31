@@ -10,7 +10,7 @@ use wiremock::MockServer;
 use zero2prod::{
     configuration::{DatabaseSettings, get_configuration},
     email_client::EmailClient,
-    issue_delivery_worker::{try_execute_task, ExecutionOutcome},
+    issue_delivery_worker::{ExecutionOutcome, try_execute_task},
     startup::{Application, get_connection_pool},
     telemetry::{get_subscriber, init_subscriber},
 };
@@ -88,7 +88,7 @@ pub struct TestApp {
     pub port: u16,
     pub test_user: TestUser,
     pub api_client: reqwest::Client,
-    pub email_client: EmailClient
+    pub email_client: EmailClient,
 }
 
 impl TestApp {
@@ -191,9 +191,9 @@ impl TestApp {
                 try_execute_task(&self.db_pool, &self.email_client)
                     .await
                     .unwrap()
-                {
-                    break;
-                }
+            {
+                break;
+            }
         }
     }
 

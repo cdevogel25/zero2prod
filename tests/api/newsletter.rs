@@ -112,7 +112,9 @@ async fn newsletters_are_not_delivered_to_unconfirmed_subscribers() {
 
     // act 2: follow the redirect
     let html_body = app.get_publish_newsletter_html().await;
-    assert!(html_body.contains("<p><i>The newsletter issue has been accepted - emails will go out shortly.</i></p>"));
+    assert!(html_body.contains(
+        "<p><i>The newsletter issue has been accepted - emails will go out shortly.</i></p>"
+    ));
     app.dispatch_all_pending_emails().await;
 }
 
@@ -144,7 +146,9 @@ async fn newsletters_are_delivered_to_confirmed_subscribers() {
 
     // act 2: follow the redirect
     let html_body = app.get_publish_newsletter_html().await;
-    assert!(html_body.contains("<p><i>The newsletter issue has been accepted - emails will go out shortly.</i></p>"));
+    assert!(html_body.contains(
+        "<p><i>The newsletter issue has been accepted - emails will go out shortly.</i></p>"
+    ));
     app.dispatch_all_pending_emails().await;
 }
 
@@ -174,7 +178,9 @@ async fn newsletter_creation_is_idempotent() {
 
     // act 2: follow the redirect
     let html_body = app.get_publish_newsletter_html().await;
-    assert!(html_body.contains("<p><i>The newsletter issue has been accepted - emails will go out shortly.</i></p>"));
+    assert!(html_body.contains(
+        "<p><i>The newsletter issue has been accepted - emails will go out shortly.</i></p>"
+    ));
     app.dispatch_all_pending_emails().await;
 
     // act 3: submit newsletter form again
@@ -183,7 +189,9 @@ async fn newsletter_creation_is_idempotent() {
 
     // act 4: follow the redirect
     let html_body = app.get_publish_newsletter_html().await;
-    assert!(html_body.contains("<p><i>The newsletter issue has been accepted - emails will go out shortly.</i></p>"));
+    assert!(html_body.contains(
+        "<p><i>The newsletter issue has been accepted - emails will go out shortly.</i></p>"
+    ));
     app.dispatch_all_pending_emails().await;
 }
 

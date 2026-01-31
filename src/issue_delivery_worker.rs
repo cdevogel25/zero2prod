@@ -1,6 +1,6 @@
-use crate::{configuration::Settings, startup::get_connection_pool};
 use crate::domain::SubscriberEmail;
-use crate::email_client::{EmailClient};
+use crate::email_client::EmailClient;
+use crate::{configuration::Settings, startup::get_connection_pool};
 use sqlx::{Executor, PgPool, Postgres, Transaction};
 use std::time::Duration;
 use tracing::{Span, field::display};
@@ -42,7 +42,10 @@ async fn get_issue(pool: &PgPool, issue_id: Uuid) -> Result<NewsletterIssue, any
     ),
     err
 )]
-pub async fn try_execute_task(pool: &PgPool, email_client: &EmailClient) -> Result<ExecutionOutcome, anyhow::Error> {
+pub async fn try_execute_task(
+    pool: &PgPool,
+    email_client: &EmailClient,
+) -> Result<ExecutionOutcome, anyhow::Error> {
     let task = dequeue_task(pool).await?;
     if task.is_none() {
         return Ok(ExecutionOutcome::EmptyQueue);
@@ -134,10 +137,7 @@ async fn delete_task(
     Ok(())
 }
 
-async fn worker_loop(
-    pool: PgPool,
-    email_client: EmailClient
-) -> Result<(), anyhow::Error> {
+async fn worker_loop(pool: PgPool, email_client: EmailClient) -> Result<(), anyhow::Error> {
     loop {
         match try_execute_task(&pool, &email_client).await {
             Ok(ExecutionOutcome::EmptyQueue) => {
@@ -151,9 +151,7 @@ async fn worker_loop(
     }
 }
 
-pub async fn run_worker_until_stopped(
-    configuration: Settings
-) -> Result<(), anyhow::Error> {
+pub async fn run_worker_until_stopped(configuration: Settings) -> Result<(), anyhow::Error> {
     let connection_pool = get_connection_pool(&configuration.database);
     let email_client = configuration.email_client.client();
     worker_loop(connection_pool, email_client).await

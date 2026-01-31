@@ -29,10 +29,10 @@ impl EmailClientSettings {
             self.base_url,
             sender_email,
             self.authorization_token,
-            timeout
+            timeout,
         )
     }
-    
+
     pub fn sender(&self) -> Result<SubscriberEmail, String> {
         SubscriberEmail::parse(self.sender_email.clone())
     }
