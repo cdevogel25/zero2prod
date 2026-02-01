@@ -1,10 +1,11 @@
-use crate::authentication::{AuthError, Credentials, validate_credentials};
-use crate::routes::error_chain_fmt;
-use crate::session_state::TypedSession;
 use actix_web::{HttpResponse, error::InternalError, http::header::LOCATION, web};
 use actix_web_flash_messages::FlashMessage;
 use secrecy::SecretString;
 use sqlx::PgPool;
+
+use crate::authentication::{AuthError, Credentials, validate_credentials};
+use crate::routes::error_chain_fmt;
+use crate::session_state::TypedSession;
 
 #[derive(serde::Deserialize)]
 pub struct FormData {

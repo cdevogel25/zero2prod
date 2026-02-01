@@ -1,10 +1,11 @@
-use crate::domain::SubscriberEmail;
-use crate::email_client::EmailClient;
-use crate::{configuration::Settings, startup::get_connection_pool};
 use sqlx::{Executor, PgPool, Postgres, Transaction};
 use std::time::Duration;
 use tracing::{Span, field::display};
 use uuid::Uuid;
+
+use crate::domain::SubscriberEmail;
+use crate::email_client::EmailClient;
+use crate::{configuration::Settings, startup::get_connection_pool};
 
 struct NewsletterIssue {
     title: String,

@@ -1,5 +1,3 @@
-use crate::session_state::TypedSession;
-use crate::utils::{e500, see_other};
 use actix_web::{
     FromRequest, HttpMessage,
     body::MessageBody,
@@ -9,6 +7,9 @@ use actix_web::{
 };
 use std::ops::Deref;
 use uuid::Uuid;
+
+use crate::session_state::TypedSession;
+use crate::utils::{e500, see_other};
 
 #[derive(Copy, Clone, Debug)]
 pub struct UserId(Uuid);
@@ -27,6 +28,7 @@ impl Deref for UserId {
     }
 }
 
+// anonymous users should be redirected to "/login" if they try to access a path they shouldn't
 pub async fn reject_anonymous_users(
     mut req: ServiceRequest,
     next: Next<impl MessageBody>,
