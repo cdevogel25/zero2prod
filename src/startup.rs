@@ -1,7 +1,3 @@
-use crate::authentication::reject_anonymous_users;
-use crate::configuration::{DatabaseSettings, Settings};
-use crate::email_client::EmailClient;
-use crate::routes::*;
 use actix_session::{SessionMiddleware, storage::RedisSessionStore};
 use actix_web::{App, HttpServer, cookie::Key, dev::Server, middleware::from_fn, web, web::Data};
 use actix_web_flash_messages::{FlashMessagesFramework, storage::CookieMessageStore};
@@ -10,6 +6,12 @@ use sqlx::{PgPool, postgres::PgPoolOptions};
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
 
+use crate::authentication::reject_anonymous_users;
+use crate::configuration::{DatabaseSettings, Settings};
+use crate::email_client::EmailClient;
+use crate::routes::*;
+
+// wrapper type for SecretString
 #[derive(Clone)]
 pub struct HmacSecret(pub SecretString);
 
@@ -21,6 +23,7 @@ pub struct Application {
 impl Application {
     // converted the build function to a constructor for `Application`
     pub async fn build(configuration: Settings) -> Result<Self, anyhow::Error> {
+        // postgres connection pool
         let connection_pool = get_connection_pool(&configuration.database);
         let email_client = configuration.email_client.client();
 
@@ -60,6 +63,7 @@ impl Application {
     }
 }
 
+// wrapper type for application url
 pub struct ApplicationBaseUrl(pub String);
 
 async fn run(
@@ -79,18 +83,23 @@ async fn run(
     let redis_store = RedisSessionStore::new(redis_uri.expose_secret()).await?;
     let server = HttpServer::new(move || {
         App::new()
+            // wrap the entire app in message_framework for sending FlashMessages
             .wrap(message_framework.clone())
+            // authentication middleware
             .wrap(SessionMiddleware::new(
                 redis_store.clone(),
                 secret_key.clone(),
             ))
+            // application-wide logging
             .wrap(TracingLogger::default())
+            // routes
             .route("/", web::get().to(home))
             .route("/login", web::get().to(login_form))
             .route("/login", web::post().to(login))
             .route("/health_check", web::get().to(health_check))
             .route("/subscriptions", web::post().to(subscribe))
             .route("/subscriptions/confirm", web::get().to(confirm))
+            // scope the admin paths so only authenticated users can access them
             .service(
                 web::scope("/admin")
                     .wrap(from_fn(reject_anonymous_users))
@@ -101,6 +110,7 @@ async fn run(
                     .route("/newsletter", web::get().to(publish_newsletter_form))
                     .route("/newsletter", web::post().to(publish_newsletter)),
             )
+            // attach all the data services
             .app_data(db_pool.clone())
             .app_data(email_client.clone())
             .app_data(base_url.clone())

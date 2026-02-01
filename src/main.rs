@@ -10,7 +10,9 @@ use zero2prod::{
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    // install the crypto provider (not needed in dev, but the alpine build doesn't specify one by default)
     let _ = CryptoProvider::install_default(rustls::crypto::aws_lc_rs::default_provider());
+
     let subscriber = get_subscriber("zero2prod".into(), "info".into(), std::io::stdout);
     init_subscriber(subscriber);
 
@@ -19,6 +21,7 @@ async fn main() -> anyhow::Result<()> {
     let application_task = tokio::spawn(application.run_until_stopped());
     let worker_task = tokio::spawn(run_worker_until_stopped(configuration));
 
+    // waits for multiple asynchronous functions and returns when either completes
     tokio::select! {
         o = application_task => report_exit("API", o),
         o = worker_task => report_exit("Background worker", o),
@@ -27,6 +30,7 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
+// return when the provided task exits (ie. when a background delivery worker finishes)
 fn report_exit(task_name: &str, outcome: Result<Result<(), impl Debug + Display>, JoinError>) {
     match outcome {
         Ok(Ok(())) => {
