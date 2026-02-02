@@ -4,8 +4,8 @@ use secrecy::SecretString;
 use sqlx::PgPool;
 
 use crate::authentication::{AuthError, Credentials, validate_credentials};
-use crate::routes::error_chain_fmt;
 use crate::session_state::TypedSession;
+use crate::utils::error_chain_fmt;
 
 #[derive(serde::Deserialize)]
 pub struct FormData {

@@ -27,12 +27,6 @@ impl Application {
         let connection_pool = get_connection_pool(&configuration.database);
         let email_client = configuration.email_client.client();
 
-        // i guess this just works?
-        // sqlx::migrate!("./migrations")
-        //     .run(&connection_pool)
-        //     .await
-        //     .expect("Failed to apply migrations.");
-
         let address = format!(
             "{}:{}",
             configuration.application.host, configuration.application.port,

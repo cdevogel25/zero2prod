@@ -3,7 +3,7 @@ use anyhow::Context;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::routes::error_chain_fmt;
+use crate::utils::error_chain_fmt;
 
 // --- SECTION: structs and implementations ---
 
@@ -62,12 +62,13 @@ pub async fn confirm(
 #[tracing::instrument(name = "Mark subscriber as confirmed", skip(pool, subscriber_id))]
 pub async fn confirm_subscriber(pool: &PgPool, subscriber_id: Uuid) -> Result<(), ConfirmError> {
     let already_confirmed = check_if_subscriber_already_confirmed(pool, subscriber_id)
-        .await
-        .map_err(|e| ConfirmError::UnexpectedError(e.into()))?;
-    dbg!(already_confirmed);
+            .await
+            .map_err(|e| ConfirmError::UnexpectedError(e.into()))?;
+
     if already_confirmed {
         return Err(ConfirmError::AlreadyConfirmed);
-    }
+    }    
+    
     sqlx::query!(
         r#"UPDATE subscriptions SET status = 'confirmed' WHERE id = $1"#,
         subscriber_id,
@@ -78,6 +79,7 @@ pub async fn confirm_subscriber(pool: &PgPool, subscriber_id: Uuid) -> Result<()
         tracing::error!("Failed to execute query: {:?}", e);
         ConfirmError::UnexpectedError(e.into())
     })?;
+
     Ok(())
 }
 
