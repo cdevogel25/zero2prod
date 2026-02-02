@@ -101,7 +101,6 @@ pub async fn get_saved_response(
     }
 }
 
-
 pub async fn try_processing(
     pool: &PgPool,
     idempotency_key: &IdempotencyKey,

@@ -106,9 +106,7 @@ async fn clicking_on_the_confirmation_link_twice_returns_a_conflict_error() {
     assert_eq!(saved.status, "confirmed");
 
     // act 2: click the link a second time
-    let response = reqwest::get(confirmation_links.html)
-        .await
-        .unwrap();
+    let response = reqwest::get(confirmation_links.html).await.unwrap();
 
     assert_eq!(response.status().as_u16(), 409);
 }
@@ -128,15 +126,18 @@ async fn subscribing_twice_without_confirming_returns_identical_confirmation_lin
     // act
     app.post_subscriptions(body.into()).await;
     let first_email_request = &app.email_server.received_requests().await.unwrap()[0];
-    
+
     app.post_subscriptions(body.into()).await;
     let second_email_request = &app.email_server.received_requests().await.unwrap()[0];
-    
+
     let first_confirmation_links = app.get_confirmation_links(&first_email_request);
     let second_confirmation_links = app.get_confirmation_links(&second_email_request);
 
     // assert
-    assert_eq!(first_confirmation_links.html, second_confirmation_links.html)
+    assert_eq!(
+        first_confirmation_links.html,
+        second_confirmation_links.html
+    )
 }
 
 // #[tokio::test]

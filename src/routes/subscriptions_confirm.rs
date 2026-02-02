@@ -61,7 +61,7 @@ pub async fn confirm(
 
 #[tracing::instrument(name = "Mark subscriber as confirmed", skip(pool, subscriber_id))]
 pub async fn confirm_subscriber(pool: &PgPool, subscriber_id: Uuid) -> Result<(), ConfirmError> {
-    let already_confirmed = check_if_subscriber_already_confirmed(&pool, subscriber_id)
+    let already_confirmed = check_if_subscriber_already_confirmed(pool, subscriber_id)
         .await
         .map_err(|e| ConfirmError::UnexpectedError(e.into()))?;
     dbg!(already_confirmed);
@@ -100,16 +100,20 @@ pub async fn get_subscriber_id_from_token(
     Ok(result.map(|r| r.subscriber_id))
 }
 
-#[tracing::instrument(name = "Check if subscriber is already confirmed", skip(pool, subscriber_id))]
+#[tracing::instrument(
+    name = "Check if subscriber is already confirmed",
+    skip(pool, subscriber_id)
+)]
 pub async fn check_if_subscriber_already_confirmed(
     pool: &PgPool,
-    subscriber_id: Uuid) -> Result<bool, sqlx::Error>
-{
+    subscriber_id: Uuid,
+) -> Result<bool, sqlx::Error> {
     let result = sqlx::query!(
         "SELECT status FROM subscriptions
         WHERE id = $1",
         subscriber_id
-    ).fetch_one(pool)
+    )
+    .fetch_one(pool)
     .await
     .map_err(|e| {
         tracing::error!("Failed to execute query: {:?}", e);
@@ -118,6 +122,6 @@ pub async fn check_if_subscriber_already_confirmed(
 
     match result.status.as_str() {
         "confirmed" => Ok(true),
-        _ => Ok(false)
+        _ => Ok(false),
     }
 }
