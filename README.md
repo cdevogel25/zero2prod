@@ -5,6 +5,7 @@ Page: 497/623
 (on the macbook) don't forget: docker build --build-arg ARCH_TARGET=aarch64 --tag ...
 
 - what happens if a user tries to subscribe twice?
+    - a user will recieve the same confirmation link if they attempt to subscribe without clicking it.
     - check if subscription_active, and send a 409
 - what happens if a user clicks the confirmation link twice?
     - same as above
@@ -16,3 +17,7 @@ Page: 497/623
 
 - how on earth do you do angular with this there must be a way
     - the way is make this a backend *only* and send requests from the main page.
+
+# Retrospective
+ 
+I've never really written a retrospective for a project like this before, but I feel the need to set out my understanding of how the zero2prod project functions. In order: I'll go through the libraries and tools used, then authentication, domain, idempotency implementation, and the actual web pages. I'll probably fill this in as I go along.
